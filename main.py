@@ -37,6 +37,7 @@ running it twice and comparing sha256). No network, no randomness, no
 model call, no input files.
 """
 
+import hashlib
 import os
 
 STORY = (
@@ -74,6 +75,10 @@ def main() -> None:
         written = f.read()
     if written != data:
         raise OSError("write-back verification failed: entry.txt mismatch")
+    # Digest verification: the bytes on disk must hash to the bytes we
+    # intended to write — a second, independent check of the same write.
+    if hashlib.sha256(written).hexdigest() != hashlib.sha256(data).hexdigest():
+        raise OSError("digest verification failed: entry.txt sha256 mismatch")
     print(f"wrote {len(data)} bytes to {OUTPUT_PATH}")
 
 
